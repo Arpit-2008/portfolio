@@ -1,3 +1,4 @@
+HEAD
 # Cloud Server
 
 This is a deploy-ready Node.js + Express + Socket.IO server.
@@ -5,3 +6,7 @@ This is a deploy-ready Node.js + Express + Socket.IO server.
 ## How to run locally
 
 1. Install dependencies:
+
+# portfolio
+Arpit Srivastava BCA (AI) student with a strong interest in web development and artificial intelligence. I build practical projects such as AI-based chat interfaces and interactive web tools while continuously improving my problem-solving and development skills. Focused on learning, consistency, and real-world application of technology.
+7a3e1a94d2fa3548d1fcb159542fdfc9697d4b6e
