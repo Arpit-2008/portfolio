@@ -1,13 +1,14 @@
 {
   "name": "cloud-server",
   "version": "1.0.0",
-  "description": "Deploy-ready Node.js cloud server",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "dotenv": "^17.3.1",
     "express": "^4.18.2",
-    "socket.io": "^4.7.2"
+    "mongoose": "^7.8.9",
+    "socket.io": "^4.8.1"
   }
 }

@@ -1,31 +1,27 @@
 const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-
+const path = require("path");
 const app = express();
+
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
-// Use dynamic port for Render / default 5000 for local testing
-const PORT = process.env.PORT || 5000;
+// In-memory storage for locations
+let locations = [];
 
-const server = http.createServer(app);
-const io = new Server(server);
-
-// Basic test route
-app.get("/", (req, res) => {
-    res.send("Cloud Server is running!");
+app.post("/location", (req, res) => {
+  const { deviceId, latitude, longitude } = req.body;
+  if(deviceId && latitude && longitude){
+    locations.push({ deviceId, latitude, longitude });
+    res.json({ status: "ok" });
+  } else {
+    res.status(400).json({ error: "Invalid data" });
+  }
 });
 
-// Optional Socket.IO connection
-io.on("connection", (socket) => {
-    console.log("Client connected");
-
-    // You can add real-time events here if needed
-    socket.on("disconnect", () => {
-        console.log("Client disconnected");
-    });
+app.get("/locations", (req, res) => {
+  res.json(locations);
 });
 
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
