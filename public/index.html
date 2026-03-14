@@ -1,53 +1,120 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>Cloud Server Map</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    #map { height: 100vh; }
-  </style>
+<title>Live Tracking</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+
+body{
+margin:0;
+padding:0;
+}
+
+#map{
+height:90vh;
+width:100%;
+}
+
+</style>
+
 </head>
+
 <body>
-  <div id="map"></div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    var map = L.map('map').setView([25.76, 84.15], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-    var marker;
+<h2 style="text-align:center;">Live GPS Tracking</h2>
 
-    // Load location from server
-    async function loadLocation() {
-      const res = await fetch("/locations");
-      const data = await res.json();
-      if(data.length > 0) {
-        let last = data[data.length - 1];
-        let lat = last.latitude;
-        let lng = last.longitude;
+<div id="map"></div>
 
-        if(!marker){
-          marker = L.marker([lat,lng]).addTo(map);
-        } else {
-          marker.setLatLng([lat,lng]);
-        }
-        map.setView([lat,lng], 13);
-      }
-    }
-    setInterval(loadLocation, 3000);
 
-    // Send GPS to server
-    function sendLocation(position){
-      let lat = position.coords.latitude;
-      let lng = position.coords.longitude;
-      fetch("/location", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deviceId: "phone1", latitude: lat, longitude: lng })
-      });
-    }
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="/socket.io/socket.io.js"></script>
 
-    function error(){ console.log("Location permission denied"); }
-    setInterval(()=>{ navigator.geolocation.getCurrentPosition(sendLocation, error); }, 5000);
-  </script>
+<script>
+
+const socket = io();
+
+var street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+maxZoom:19
+});
+
+var satellite = L.tileLayer(
+'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+maxZoom:19
+});
+
+var map = L.map('map',{
+center:[25.76,84.15],
+zoom:13,
+layers:[street]
+});
+
+var baseMaps = {
+"Street Map": street,
+"Satellite": satellite
+};
+
+L.control.layers(baseMaps).addTo(map);
+
+var marker;
+
+
+// REALTIME LOCATION RECEIVE
+socket.on("locationUpdate",(data)=>{
+
+let lat = data.latitude;
+let lng = data.longitude;
+
+if(!marker){
+marker = L.marker([lat,lng]).addTo(map);
+}else{
+marker.setLatLng([lat,lng]);
+}
+
+map.setView([lat,lng],13);
+
+});
+
+
+
+// PHONE GPS SERVER KO BHEJNA
+function sendLocation(position){
+
+let lat = position.coords.latitude;
+let lng = position.coords.longitude;
+
+fetch("/location",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+deviceId:"phone1",
+latitude:lat,
+longitude:lng
+})
+});
+
+}
+
+
+function error(){
+console.log("Location permission denied");
+}
+
+
+// HAR 5 SEC GPS SEND
+setInterval(()=>{
+
+navigator.geolocation.getCurrentPosition(sendLocation,error);
+
+},5000);
+
+</script>
+
 </body>
 </html>
